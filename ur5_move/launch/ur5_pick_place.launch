@@ -1,0 +1,6 @@
+<launch>
+
+  <node name="ur5_pick_place" pkg="ur5_pick_place" type="ur5_pick_place.py" respawn="false" output="screen">
+  </node>
+
+</launch>
