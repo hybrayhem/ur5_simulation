@@ -32,7 +32,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 #
-# Author: Acorn Pooley, Mike Lautman
+# Author: Acorn Pooley, Mike Lautman; UR5 revision by hybrayhem
 
 ## BEGIN_SUB_TUTORIAL imports
 ##
@@ -80,10 +80,10 @@ def all_close(goal, actual, tolerance):
   return True
 
 
-class MoveGroupPythonIntefaceTutorial(object):
-  """MoveGroupPythonIntefaceTutorial"""
+class UR5PickPlace(object):
+  """UR5PickPlace"""
   def __init__(self):
-    super(MoveGroupPythonIntefaceTutorial, self).__init__()
+    super(UR5PickPlace, self).__init__()
 
     ## BEGIN_SUB_TUTORIAL setup
     ##
@@ -106,7 +106,7 @@ class MoveGroupPythonIntefaceTutorial(object):
     ## If you are using a different robot, change this value to the name of your robot
     ## arm planning group.
     ## This interface can be used to plan and execute motions:
-    group_name = "panda_arm"
+    group_name = "manipulator"
     move_group = moveit_commander.MoveGroupCommander(group_name)
 
     ## Create a `DisplayTrajectory`_ ROS publisher which is used to display
@@ -171,7 +171,7 @@ class MoveGroupPythonIntefaceTutorial(object):
     joint_goal[3] = -pi/2
     joint_goal[4] = 0
     joint_goal[5] = pi/3
-    joint_goal[6] = 0
+    # joint_goal[6] = 0
 
     # The go command can be called with joint values, poses, or without any
     # parameters if you have already set the pose or joint target for the group
@@ -368,9 +368,9 @@ class MoveGroupPythonIntefaceTutorial(object):
     ## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     ## First, we will create a box in the planning scene between the fingers:
     box_pose = geometry_msgs.msg.PoseStamped()
-    box_pose.header.frame_id = "panda_hand"
+    box_pose.header.frame_id = "ee_link" # or tool0
     box_pose.pose.orientation.w = 1.0
-    box_pose.pose.position.z = 0.11 # above the panda_hand frame
+    box_pose.pose.position.x = 0.05 # next to the end effector frame
     box_name = "box"
     scene.add_box(box_name, box_pose, size=(0.075, 0.075, 0.075))
 
@@ -385,7 +385,7 @@ class MoveGroupPythonIntefaceTutorial(object):
     # Copy class variables to local variables to make the web tutorials more clear.
     # In practice, you should use the class variables directly unless you have a good
     # reason not to.
-    box_name = 'cache'
+    box_name = 'box'
     robot = self.robot
     scene = self.scene
     eef_link = self.eef_link
@@ -401,7 +401,7 @@ class MoveGroupPythonIntefaceTutorial(object):
     ## planning scene to ignore collisions between those links and the box. For the Panda
     ## robot, we set ``grasping_group = 'hand'``. If you are using a different robot,
     ## you should change this value to the name of your end effector group name.
-    grasping_group = 'hand'
+    grasping_group = 'endeffector' # or manipulator
     touch_links = robot.get_link_names(group=grasping_group)
     scene.attach_box(eef_link, box_name, touch_links=touch_links)
     ## END_SUB_TUTORIAL
@@ -455,45 +455,45 @@ def main():
   try:
     print("")
     print("----------------------------------------------------------")
-    print("Welcome to the MoveIt MoveGroup Python Interface Tutorial")
+    print("Welcome to the UR5 Pick Place Demo with MoveGroup Interface")
     print("----------------------------------------------------------")
     print("Press Ctrl-D to exit at any time")
     print("")
-    input("============ Press `Enter` to begin the tutorial by setting up the moveit_commander ...")
-    tutorial = MoveGroupPythonIntefaceTutorial()
+    input("============ Press `Enter` to begin the demo by setting up the moveit_commander ...")
+    demo = UR5PickPlace()
 
     input("============ Press `Enter` to execute a movement using a joint state goal ...")
-    tutorial.go_to_joint_state()
+    demo.go_to_joint_state()
 
     input("============ Press `Enter` to execute a movement using a pose goal ...")
-    tutorial.go_to_pose_goal()
+    demo.go_to_pose_goal()
 
     input("============ Press `Enter` to plan and display a Cartesian path ...")
-    cartesian_plan, fraction = tutorial.plan_cartesian_path()
+    cartesian_plan, fraction = demo.plan_cartesian_path()
 
     input("============ Press `Enter` to display a saved trajectory (this will replay the Cartesian path)  ...")
-    tutorial.display_trajectory(cartesian_plan)
+    demo.display_trajectory(cartesian_plan)
 
     input("============ Press `Enter` to execute a saved path ...")
-    tutorial.execute_plan(cartesian_plan)
+    demo.execute_plan(cartesian_plan)
 
     input("============ Press `Enter` to add a box to the planning scene ...")
-    tutorial.add_box()
+    demo.add_box()
 
-    input("============ Press `Enter` to attach a Box to the Panda robot ...")
-    tutorial.attach_box()
+    input("============ Press `Enter` to attach a Box to the UR5 robot ...")
+    demo.attach_box()
 
     input("============ Press `Enter` to plan and execute a path with an attached collision object ...")
-    cartesian_plan, fraction = tutorial.plan_cartesian_path(scale=-1)
-    tutorial.execute_plan(cartesian_plan)
+    cartesian_plan, fraction = demo.plan_cartesian_path(scale=-1)
+    demo.execute_plan(cartesian_plan)
 
-    input("============ Press `Enter` to detach the box from the Panda robot ...")
-    tutorial.detach_box()
+    input("============ Press `Enter` to detach the box from the UR5 robot ...")
+    demo.detach_box()
 
     input("============ Press `Enter` to remove the box from the planning scene ...")
-    tutorial.remove_box()
+    demo.remove_box()
 
-    print("============ Python tutorial demo complete!")
+    print("============ Python demo complete!")
   except rospy.ROSInterruptException:
     return
   except KeyboardInterrupt:
